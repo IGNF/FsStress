@@ -30,6 +30,7 @@ def fGetFileName():
 ## Save the results into a cvs file.
 def report(stressPath, action):
     df = pandas.DataFrame (theResults, columns=['Task','Duration'])
+
     df.to_csv (stressPath+"/"+"stressReport" + action + "-" + theBegin+".csv", sep=";")
     print (df)
 
@@ -51,30 +52,43 @@ def runHelp():
     print ("   <params> : <nbdirs>x<nbfiles>x<size>")
     return 0
 
-## Stress : writing nbFiles of size nMo MB on dirName
-def runStressWrite(dirName, nbFiles, nMo):
+## writing nbFiles of size nMB MBytes in dirName
+def runStressWriteFilesInDir(dirName, nbFiles = 1, nMB = 1):
     for i in range(nbFiles):
-        t=timeit.Timer (lambda: writeFileMo(dirName, nMo))
+        t=timeit.Timer (lambda: writeFileMo(dirName, nMB))
         duration = t.timeit(number=1)
         print ("time elapsed : ", duration, "s.")
-        task="Write-"+str(nMo)+"MB"
+        task="Write-"+str(nMB)+"MB"
         theResults.append ([task, duration])
-    report(dirName, "write")
+    
 
-def fParseDirNbNb(s):
+def runStressWriteFiles (dirName, depth = 1, nbDirs = 1, nbFiles = 1, nbMB = 1):
+    if depth == 0 or nbDirs == 0: 
+        runStressWriteFilesInDir (dirName, nbFiles, nbMB)
+    else:
+        ## Create dirs and recurse
+        for d in range(nbDirs): 
+            subPath = os.path.join(dirName, fPreciseTimeString()) 
+            os.mkdir(subPath)
+            runStressWriteFiles (subPath, depth-1, nbDirs, nbFiles, nbMB)
+    
+
+## Parsing depth x dirs x nbFiles w nbMD 
+def fParseWriteParams(s):
     a = s.split("x")
     count = len(a)
-    res = [ 0, 0, 0]
-    nMo = int (a [count-1])    
-    res[2] = nMo
-    if (count > 1):
-        nF = int (a [count-2])
-        res[1] = nF
+    nMB = 1
+    if count > 0: nMB = int (a [count-1])
+    nFiles = 1
+    if count > 1: nFiles = int (a [count-2])
+    nDirs = 0
+    depth = 0
     if (count > 2):
-        nDir = int (a [count-3])
-        res[0] = nDir
-    return res
+        nDirs = int (a [count-3])
+        depth = 1
+    if (count > 3):  depth = int (a [count-4])
 
+    return depth, nDirs, nFiles, nMB
 
 def listFilesAndDirs(path):
      l = os.listdir(path)
@@ -99,8 +113,7 @@ def discover (p):
     return 0
 
 def readFile (fPath):
-    if not os.path.isfile (fPath):
-        raise "In readFile ("+ fPAth + ") : not a file."
+    if not os.path.isfile (fPath): raise "In readFile ("+ fPath + ") : not a file."
     fileSize = os.path.getsize(fPath)
     f=open (fPath, "rb")
     bytes = f.read(1024*1024)
@@ -215,9 +228,10 @@ def main():
         return runHelp()
     elif theCommand == "write":
         sParams = args[1]
-        params = fParseDirNbNb (sParams)
+        de, nd, nb, nm = fParseWriteParams (sParams)
         sPath = tryParsePath (args, 2)
-        return runStressWrite (sPath, params[1], params[2])
+        runStressWriteFiles (sPath, de, nd, nb, nm)
+        report(sPath, "write")
         return 0
     elif theCommand == "discover":
         return discover(tryParsePath (args, 1))
