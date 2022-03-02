@@ -1,10 +1,6 @@
 ## Fox's filesystem stressing
 ## This program aims at testing the I/O performance
-## of different file systems, such as :
-## - Hard drives,
-## - SSDs
-## - Distributed multi disk file systems,
-## - and so on.
+## of different file systems (HD, SSD, etc.)
 
 import sys
 import os
