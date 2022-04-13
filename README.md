@@ -19,5 +19,5 @@ The following packages are required : timeit pandas random rqdm
 - Creating <nbdirs>, and writing <nbfiles> of <size> MB file in each : `python FsStress.py <nbdirs>x<nbfiles>x<size> <dir>`
 - Discovering what's in a <dir> : `python FsStress.py discover <dir>`
 - Reading all the files in a <dir> : `python FsStress.py read <dir>`
-- Randomly reading : ` python FsStress.py rread <delay> <dir>`. This randomly reads 1 MB pieces of the files in <dir>, for a <delay> seconds dureation.
-- Randomly write : still to bo done...
+- Randomly reading : `python FsStress.py rread <delay> <dir>`. This randomly reads 1 MB pieces of the files in <dir>, for a `delay` seconds dureation.
+- Randomly write : still to be done...
